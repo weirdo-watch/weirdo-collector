@@ -8,10 +8,13 @@ from weirdo_collector.logging import get_logger
 
 
 class App(object):
-    """docstring for App"""
+    """Application logic"""
 
-    def __init__(self, path: str = "", **kwargs) -> None:
-        self.path: Path = Path(path or "weirdos")
+    def __init__(self, base_dir: str = "", **kwargs) -> None:
+        self.base_dir: Path = Path(base_dir or "weirdos")
+        self.config_file: Path = Path(
+            kwargs.get("config_file") or "weirdo-collector.yaml"
+        )
         self.logger = get_logger(verbose=kwargs.get("verbose", False))
 
     @property
@@ -19,7 +22,7 @@ class App(object):
     def users(self):
         return [
             Weirdo(x.parts[1], x)
-            for x in self.path.glob("*/config.yaml")
+            for x in self.base_dir.glob("*/config.yaml")
             if x.is_file()
         ]
 
@@ -28,7 +31,7 @@ class App(object):
 
         if len(users) == 0:
             self.logger.warning(
-                "Hey! We didn't find any weirdos in {}".format(self.path)
+                "Hey! We didn't find any weirdos in {}".format(self.base_dir)
             )
         else:
             self.logger.info("Collecting weirdos!")
@@ -44,9 +47,12 @@ class App(object):
     def main(self):
         self.get_em()
 
+    def config(self):
+        pass
+
 
 class Weirdo(object):
-    """docstring for Weirdo"""
+    """Where the weirdos roam"""
 
     def __init__(self, name: str, config_file: Path) -> None:
         self.name: str = name
